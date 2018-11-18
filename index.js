@@ -1,6 +1,7 @@
 const dotenv = require('dotenv').config();
 const express = require('express');
 const app = express();
+const path = require('path');
 const crypto = require('crypto');
 const cookie = require('cookie');
 const nonce = require('nonce')();
@@ -9,11 +10,14 @@ const request = require('request-promise');
 
 const apiKey = process.env.SHOPIFY_API_KEY;
 const apiSecret = process.env.SHOPIFY_API_SECRET;
-const scopes = 'read_products';
+const scopes = 'read_products,write_script_tags';
 const forwardingAddress = "https://e67d08dc.ngrok.io"; // Replace this with your HTTPS Forwarding address
 
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
 app.get('/', (req, res) => {
-  res.send('Hello World!<a href="/shopify">link!</a>');
+  res.send('Hello World! <a href="/addChat">link!</a>');
 });
 
 app.get('/shopify', (req, res) => {
@@ -37,7 +41,9 @@ app.get('/shopify', (req, res) => {
   app.get('/shopify/callback', (req, res) => {
     const { shop, hmac, code, state } = req.query;
     const stateCookie = cookie.parse(req.headers.cookie).state;
-  
+    
+    res.cookie('shop', shop);
+
     if (state !== stateCookie) {
       return res.status(403).send('Request origin cannot be verified');
     }
@@ -79,12 +85,14 @@ app.get('/shopify', (req, res) => {
       request.post(accessTokenRequestUrl, { json: accessTokenPayload })
       .then((accessTokenResponse) => {
         const accessToken = accessTokenResponse.access_token;
-        // DONE: Use access token to make API call to 'shop' endpoint
+
+        res.cookie('access_token',accessToken);
+
         const shopRequestUrl = 'https://' + shop + '/admin/shop.json';
         const shopRequestHeaders = {
           'X-Shopify-Access-Token': accessToken,
         };
-  
+        
         request.get(shopRequestUrl, { headers: shopRequestHeaders })
         .then((shopResponse) => {
           res.status(200).end(shopResponse);
@@ -101,6 +109,51 @@ app.get('/shopify', (req, res) => {
       res.status(400).send('Required parameters missing');
     }
   });
+
+  app.get('/products', function(req, res) {
+    var next, previous, page;
+    page = req.query.page ? ~~req.query.page:1;
+
+    next = page + 1;
+    previous = page == 1 ? page : page - 1;
+    request.get({
+        url: 'https://' +  cookie.parse(req.headers.cookie).shop + '/admin/products.json?limit=5&page=' + page,
+        headers: {
+            'X-Shopify-Access-Token':  cookie.parse(req.headers.cookie).access_token
+        }
+    }, function(error, response, body){
+        console.log(arguments);
+        body = JSON.parse(body);
+        res.render('products', {
+            title: 'Products', 
+            api_key: apiKey,
+            shop:  cookie.parse(req.headers.cookie).shop,
+            next: next,
+            previous: previous,
+            products: body.products
+        });
+    })  
+})
+
+app.get('/addChat',(req,res) => {
+  request.post({
+    url: 'https://' +  cookie.parse(req.headers.cookie).shop + '/admin/script_tags.json',
+    headers: {
+        'X-Shopify-Access-Token':  cookie.parse(req.headers.cookie).access_token
+    },
+    json: {
+      "script_tag": {
+        "event": "onload",
+        "src": "https://e67d08dc.ngrok.io/chat/main.js"
+      }
+    }
+}, function(response){
+    res.send(response);
+})  
+
+});
+
+app.use( "/chat" , express.static( __dirname + '/chat/' ));
 
 app.listen(3000, () => {
   console.log('Example app listening on port 3000!');
