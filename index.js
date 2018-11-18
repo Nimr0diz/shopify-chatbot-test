@@ -13,7 +13,7 @@ const scopes = 'read_products';
 const forwardingAddress = "https://e67d08dc.ngrok.io"; // Replace this with your HTTPS Forwarding address
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('Hello World!<a href="/shopify">link!</a>');
 });
 
 app.get('/shopify', (req, res) => {
