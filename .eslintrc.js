@@ -35,7 +35,7 @@ module.exports = {
             { "ignoreChainWithDepth": 2 }
         ],
         "no-console": [
-            "error",
+            "warn",
             "always"
         ]
     }

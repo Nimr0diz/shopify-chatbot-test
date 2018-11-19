@@ -1,11 +1,16 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const request = require('request');
+const cookie = require('cookie');
+const cors = require('cors');
 
 const { appAddress } = require('./config');
 
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, 'admin-panel/views'));
 app.set('view engine', 'ejs');
+
+app.use(cors());
 
 app.get('/',(req, res) => res.redirect('/admin-panel'));
 
@@ -24,7 +29,7 @@ app.get('/addChat',(req,res) => {
     json: {
       'script_tag': {
         'event': 'onload',
-        'src': appAddress+'/chat/main.js'
+        'src': appAddress+'/chat/client/main.js'
       }
     }
   }, function(response){
