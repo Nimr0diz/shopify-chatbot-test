@@ -11,7 +11,7 @@ const request = require('request-promise');
 const apiKey = process.env.SHOPIFY_API_KEY;
 const apiSecret = process.env.SHOPIFY_API_SECRET;
 const scopes = 'read_products,write_script_tags';
-const forwardingAddress = "https://e67d08dc.ngrok.io"; // Replace this with your HTTPS Forwarding address
+const forwardingAddress = process.env.APP_ADDRESS; // Replace this with your HTTPS Forwarding address
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -122,7 +122,6 @@ app.get('/shopify', (req, res) => {
             'X-Shopify-Access-Token':  cookie.parse(req.headers.cookie).access_token
         }
     }, function(error, response, body){
-        console.log(arguments);
         body = JSON.parse(body);
         res.render('products', {
             title: 'Products', 
@@ -144,7 +143,7 @@ app.get('/addChat',(req,res) => {
     json: {
       "script_tag": {
         "event": "onload",
-        "src": "https://e67d08dc.ngrok.io/chat/main.js"
+        "src": forwardingAddress+"/chat/main.js"
       }
     }
 }, function(response){
