@@ -1,7 +1,8 @@
 alert('inserted any way!');
 
 const DOMHandler = (() => {
-  const create = (settings,events_handler) => {
+  const chatDOM = {};
+  const createChatDOM = () => {
     const container = $('<div/>');
     container.css({
       'bottom': '10px',
@@ -15,7 +16,6 @@ const DOMHandler = (() => {
     chat_app.css({
       'width': 'calc(100% - 20px);',
       'width': '400px',
-      'height': '500px',
       'border-radius': '10px',
       'background-color': '#fff',
       'box-shadow': '0 10px 20px rgba(0, 0, 0, 0.15)',
@@ -24,16 +24,16 @@ const DOMHandler = (() => {
     });
     chat_app.appendTo(container);
 
-    const messages = $('<ul/>');
-    messages.css({
+    chatDOM.messages = $('<ul/>');
+    chatDOM.messages.css({
       'position': 'relative',
       'list-style': 'none',
       'padding': '20px 10px 0 10px',
       'margin': '0px',
       'height': '347px',
-      'overflow': 'scroll',
+      'overflow-y': 'scroll',
     });
-    messages.appendTo(chat_app);
+    chatDOM.messages.appendTo(chat_app);
 
     const bottom = $('<div/>');
     bottom.css({
@@ -55,9 +55,9 @@ const DOMHandler = (() => {
     });
     input_wrapper.appendTo(bottom);
 
-    const input = $('<input/>');
-    input.attr('type','text');
-    input.css({
+    chatDOM.input = $('<input/>');
+    chatDOM.input.attr('type','text');
+    chatDOM.input.css({
       'border': 'none',
       'height': '100%',
       'box-sizing': 'border-box',
@@ -66,10 +66,10 @@ const DOMHandler = (() => {
       'outline-width': '0',
       'color': 'gray',
     });
-    input.appendTo(input_wrapper);
+    chatDOM.input.appendTo(input_wrapper);
 
-    const button = $('<div/>');
-    button.css({
+    chatDOM.button = $('<div/>');
+    chatDOM.button.css({
       'width': '140px',
       'height': '50px',
       'display': 'inline-block',
@@ -82,7 +82,7 @@ const DOMHandler = (() => {
       'text-align': 'center',
       'float': 'right',
     });
-    button.appendTo(bottom);
+    chatDOM.button.appendTo(bottom);
 
     const button_text = $('<div/>');
     button_text.html('Send');
@@ -91,30 +91,140 @@ const DOMHandler = (() => {
     'font-weight':' 300',
     'display':' inline-block',
     'line-height':' 48px',
+    'user-select':'none',
     });
-    button_text.appendTo(button);
-    
+    button_text.appendTo(chatDOM.button);
+  };
+
+  const addMessage = data => {
+    const message = $('<li/>');
+    message.css({
+      'clear':' both',
+      'overflow':' hidden',
+      'margin-bottom':' 20px',
+      'opacity': '0',
+    });
+    message.appendTo(chatDOM.messages);
+
+    const avatar = $('<div/>');
+    avatar.css({
+      'width':' 60px',
+      'height':' 60px',
+      'border-radius':' 50%',
+    });
+    avatar.appendTo(message);
+
+    const text_wrapper = $('<div/>');
+    text_wrapper.css({
+      'display':' inline-block',
+      'padding':' 20px',
+      'border-radius':' 6px',
+      'width':' calc(100% - 85px)',
+      'min-width':' 100px',
+      'position':' relative',
+    });
+    text_wrapper.appendTo(message);
+
+    const text = $('<div/>');
+    text.html(data);
+    text.css({
+      'font-size':' 18px',
+      'font-weight':' 300',
+      'color':' #c48843',
+    });
+    text.appendTo(text_wrapper);
+
+    updateScroll();
+
+    return {
+      avatar,
+      text_wrapper,
+      fadeIn: () => message.fadeTo(500,1),
+    }
+
+  };
+
+  const addBotMessage = data => {
+    const { avatar, text_wrapper, fadeIn } = addMessage(data);
+    avatar.css({
+      'background-color':' #f5886e',
+      'float':' left',
+    });
+
+    text_wrapper.css({
+      'background-color':' #ffe6cb',
+      'margin-left':' 20px',
+      'float': 'left',
+    });
+
+    fadeIn();
   }
 
+  const addUserMessage = data => {
+    const { avatar, text_wrapper, fadeIn } = addMessage(data);
+    avatar.css({
+      'background-color':' #fdbf68',
+      'float':' right',
+    });
+
+    text_wrapper.css({
+      'background-color':' #c7eafc',
+      'margin-right':' 20px',
+      'float': 'right',
+    });
+
+    fadeIn();
+  }
+
+  const getInputText = () => chatDOM.input.val();
+
+  const clearInput = () => chatDOM.input.val('');
+
+  const updateScroll = () => chatDOM.messages.animate({scrollTop: chatDOM.messages.get(0).scrollHeight},1000);
+
+  const createChat = (settings,handleUserSendMessage) => {
+       createChatDOM();
+       console.log(chatDOM);
+       addBotMessage(settings.open_message);
+       chatDOM.button.on('click',handleUserSendMessage);
+       chatDOM.input.on('keypress',(e) => e.which !== 13 || handleUserSendMessage(e));
+  };
+
   return {
-    create
+    createChat,
+    addBotMessage,
+    addUserMessage,
+    getInputText,
+    clearInput,
+    updateScroll,
   }
 })();
 
 const ChatApp = (() => {
   const loadSettings = () => {
-
+    return {
+      open_message: 'Do you want to use our bot to measure your size?',
+    }; 
+  }
+  const handleUserSendMessage = (e) => {
+    console.log('client send!',e);
+    const text = DOMHandler.getInputText();
+    DOMHandler.clearInput();
+    if(text !== ''){
+      DOMHandler.addUserMessage(text);
+    }
   }
   const init = () => {
     
     settings = loadSettings();
-    DOMHandler.create(settings,this);
+    DOMHandler.createChat(settings,handleUserSendMessage);
 
 
   };
 
   return {
-    init
+    init,
+    handleUserSendMessage,
   }
 })();
 
