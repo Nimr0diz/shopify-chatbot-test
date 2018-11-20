@@ -4,11 +4,14 @@ const path = require('path');
 const request = require('request');
 const cookie = require('cookie');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
 const { appAddress } = require('./config');
 
 app.set('views', path.join(__dirname, 'admin-panel/views'));
 app.set('view engine', 'ejs');
+
+app.use(bodyParser.json());
 
 app.use(cors());
 
@@ -18,7 +21,7 @@ app.use('/shopify', require('./shopify-auth'));
 
 app.use('/admin-panel', require('./admin-panel'));
 
-app.use('/chat', express.static( __dirname + '/chat/' ));
+app.use('/chat', require('./chat'));
 
 app.get('/addChat',(req,res) => {
   request.post({
