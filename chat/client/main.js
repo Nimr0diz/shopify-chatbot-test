@@ -1,3 +1,6 @@
+const config = {
+  appAddress: 'https://ad68d9ca.ngrok.io',
+}
 alert('inserted any way!');
 
 const DOMHandler = (() => {
@@ -94,6 +97,35 @@ const DOMHandler = (() => {
     'user-select':'none',
     });
     button_text.appendTo(chatDOM.button);
+
+    const status_bar = $('<div/>');
+    status_bar.css({
+      'width': '100%',
+      'height': '30px',
+      'display': 'flex',
+      'align-items': 'center',
+      'justify-content': 'center',
+      'position':'relative',
+    });
+    status_bar.appendTo(chat_app);
+
+    const status_text = $('<div/>');
+    status_text.html('Online');
+    status_text.css({
+      'width':'200px',
+      'text-align':'center',
+    }); 
+    status_text.appendTo(status_bar);
+
+    const status_icon = $('<img />');
+    status_icon.attr('src',config.appAddress+'/chat/client/assets/ok.svg');
+    status_icon.css({
+      'width':'20px',
+      'position':'absolute',
+      'right': '10px',
+    });
+    status_icon.appendTo(status_bar);
+
   };
 
   const addMessage = data => {
@@ -182,12 +214,12 @@ const DOMHandler = (() => {
 
   const updateScroll = () => chatDOM.messages.animate({scrollTop: chatDOM.messages.get(0).scrollHeight},1000);
 
-  const createChat = (settings,handleUserSendMessage) => {
+  const createChat = (settings,eventHandler) => {
        createChatDOM();
        console.log(chatDOM);
        addBotMessage(settings.open_message);
-       chatDOM.button.on('click',handleUserSendMessage);
-       chatDOM.input.on('keypress',(e) => e.which !== 13 || handleUserSendMessage(e));
+       chatDOM.button.on('click',eventHandler);
+       chatDOM.input.on('keypress',(e) => e.which !== 13 || eventHandler(e));
   };
 
   return {
@@ -196,8 +228,38 @@ const DOMHandler = (() => {
     addUserMessage,
     getInputText,
     clearInput,
-    updateScroll,
   }
+})();
+
+const ConnectionHandler = (() => {
+  const connection = {};
+
+  const hasConnected = () => !!connection.bot_id;
+
+  const startConversation = () => {
+    $.get(`${config.appAddress}/chat/server/init?shop=shop.com`).done((data)=>{
+      connection.bot_id = JSON.parse(data).bot_id;
+    });
+  };
+
+  const sendQuery = (message,eventHandler) => {
+    $.post({
+      url: `${config.appAddress}/chat/server/sendQuery?bot_id=${connection.bot_id}`,
+      data: JSON.stringify({
+        message,
+        is_running: true,
+      }),
+      contentType: 'application/json',
+    }).done(data => {
+      eventHandler(JSON.parse(data))
+    });
+  };
+  
+  return {
+    hasConnected,
+    startConversation,
+    sendQuery,
+  };
 })();
 
 const ChatApp = (() => {
@@ -207,12 +269,21 @@ const ChatApp = (() => {
     }; 
   }
   const handleUserSendMessage = (e) => {
-    console.log('client send!',e);
     const text = DOMHandler.getInputText();
     DOMHandler.clearInput();
     if(text !== ''){
       DOMHandler.addUserMessage(text);
+      if(ConnectionHandler.hasConnected()){
+        ConnectionHandler.sendQuery(text,handleBotSendMessage);
+      }
+      else {
+        ConnectionHandler.startConversation();
+      }
     }
+  }
+
+  const handleBotSendMessage = (data) => {
+    DOMHandler.addBotMessage(data.message);
   }
   const init = () => {
     
