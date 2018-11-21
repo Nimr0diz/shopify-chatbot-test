@@ -169,20 +169,28 @@ const DOMHandler = (() => {
       'border-radius':' 50%',
     });
     avatar.appendTo(message);
+    
+    const content = $('<div/>');
+    content.css({
+      'display':'flex',
+      'flex-direction':'column',
+      'width':' calc(100% - 85px)',
+      'min-width':' 100px',
+
+    });
+    content.appendTo(message);
 
     const text_wrapper = $('<div/>');
     text_wrapper.css({
       'display':' inline-block',
       'padding':' 20px',
       'border-radius':' 6px',
-      'width':' calc(100% - 85px)',
-      'min-width':' 100px',
       'position':' relative',
     });
-    text_wrapper.appendTo(message);
+    text_wrapper.appendTo(content);
 
     const text = $('<div/>');
-    text.html(data);
+    text.html(data.message);
     text.css({
       'font-size':' 18px',
       'font-weight':' 300',
@@ -194,6 +202,7 @@ const DOMHandler = (() => {
 
     return {
       avatar,
+      content,
       text_wrapper,
       fadeIn: () => message.fadeTo(500,1),
     }
@@ -201,34 +210,64 @@ const DOMHandler = (() => {
   };
 
   const addBotMessage = data => {
-    const { avatar, text_wrapper, fadeIn } = addMessage(data);
+    const { avatar, content, text_wrapper, fadeIn } = addMessage(data);
     avatar.css({
       'background-color':' #f5886e',
       'float':' left',
     });
 
-    text_wrapper.css({
-      'background-color':' #ffe6cb',
+    content.css({
       'margin-left':' 20px',
       'float': 'left',
     });
+
+    text_wrapper.css({
+      'background-color':' #ffe6cb',
+    });
+
+    const options = $('<div/>');
+    options.css({
+      'display':'flex',
+      'flex-direction':'column',
+      'margin-left':'30px',
+      'max-width':'150px',
+    });
+    options.appendTo(content);
+    data.options && data.options.forEach(opt =>{
+      const option = $('<div/>');
+      option.html(opt);
+      option.on('click',() => ChatApp.handleOptionClick(opt,options));
+      option.css({
+        'padding':' 3px 10px',
+        'border-radius':' 6px',
+        'background-color':' #ffe6cb',
+        'margin-top':'10px',
+        'display':'inline-block',
+        'color':' #c48843',
+        'cursor':'pointer',
+      });
+      option.appendTo(options);
+    });
+
 
     fadeIn();
   }
 
   const addUserMessage = data => {
-    const { avatar, text_wrapper, fadeIn } = addMessage(data);
+    const { avatar, content, text_wrapper, fadeIn } = addMessage(data);
     avatar.css({
       'background-color':' #fdbf68',
       'float':' right',
     });
 
-    text_wrapper.css({
-      'background-color':' #c7eafc',
+    content.css({
       'margin-right':' 20px',
       'float': 'right',
     });
 
+    text_wrapper.css({
+      'background-color':' #c7eafc',
+    });
     fadeIn();
   }
 
@@ -244,13 +283,19 @@ const DOMHandler = (() => {
       chatDOM.status_text.html(text);
       chatDOM.status_icon.unbind('load');
     });
-  }
+  };
 
-  const createChat = (settings,eventHandler) => {
+  const hideOptions = options_wrapper => new Promise(
+    (resolve,reject) => {
+      options_wrapper.fadeOut(500,resolve);
+    }
+  );
+
+  const createChat = (settings) => {
        createChatDOM();
-       addBotMessage(settings.open_message);
-       chatDOM.button.on('click',eventHandler);
-       chatDOM.input.on('keypress',(e) => e.which !== 13 || eventHandler(e));
+       addBotMessage({message: settings.open_message});
+       chatDOM.button.on('click',ChatApp.handleUserInput);
+       chatDOM.input.on('keypress',(e) => e.which !== 13 || ChatApp.handleUserInput());
   };
 
   return {
@@ -260,6 +305,7 @@ const DOMHandler = (() => {
     getInputText,
     clearInput,
     setStatus,
+    hideOptions,
 
     STATUS,
   }
@@ -309,7 +355,7 @@ const ConnectionHandler = (() => {
 })();
 
 const MessageQueue = (() => {
-  const TIMEOUT = 2000;
+  const TIMEOUT = 1500;
 
   let queue = [];
   let timer;
@@ -339,34 +385,29 @@ const ChatApp = (() => {
       open_message: 'Do you want to use our bot to measure your size?',
     }; 
   }
-  const handleUserSendMessage = (e) => {
+  const handleUserInput = () => {
     const text = DOMHandler.getInputText();
     DOMHandler.clearInput();
     if(text !== ''){
-      DOMHandler.addUserMessage(text);
+      DOMHandler.addUserMessage({message: text});
       if(ConnectionHandler.hasConnected()){
         MessageQueue.add(text);
       }
       else {
-        ConnectionHandler.startConversation()
-          .then(response => {
-            DOMHandler.setStatus(DOMHandler.STATUS.OK,'Online');
-            handleBotSendMessage(response);
-          }
-          ).catch(error => {
-            DOMHandler.setStatus(DOMHandler.STATUS.ERROR,error); 
-          });
+        waitForServerResponse(ConnectionHandler.startConversation());
       }
     }
   };
 
   const handleBotSendMessage = (data) => {
-    DOMHandler.addBotMessage(data.message);
+    console.log(data);
+    DOMHandler.addBotMessage(data);
+    
   };
 
-  const sendMessage = message => {
+  const waitForServerResponse = promise => {
     DOMHandler.setStatus(DOMHandler.STATUS.LOADING,'Bot is typing...');
-    ConnectionHandler.sendMessage(message)
+    promise
       .then(response => {
         DOMHandler.setStatus(DOMHandler.STATUS.OK,'Online');
         handleBotSendMessage(response);
@@ -374,20 +415,33 @@ const ChatApp = (() => {
       ).catch(error => {
         DOMHandler.setStatus(DOMHandler.STATUS.ERROR,error); 
       });
+  }
+
+  const sendMessage = message => {
+    waitForServerResponse(ConnectionHandler.sendMessage(message));
   };
+
+  const handleOptionClick = (option, options_wrapper) => {
+    DOMHandler.hideOptions(options_wrapper)
+      .then(() => {
+        DOMHandler.addUserMessage({message: option});
+        sendMessage(option);
+      });
+  }
 
   const init = () => {
     
     settings = loadSettings();
-    DOMHandler.createChat(settings,handleUserSendMessage);
+    DOMHandler.createChat(settings);
 
 
   };
 
   return {
     init,
-    handleUserSendMessage,
+    handleUserInput,
     sendMessage,
+    handleOptionClick,
   }
 })();
 
