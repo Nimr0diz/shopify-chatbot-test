@@ -5,6 +5,13 @@ alert('inserted any way!');
 
 const DOMHandler = (() => {
   const chatDOM = {};
+  const STATUS = {
+    OK: 'ok.svg',
+    LOADING: 'loading.svg',
+    ERROR: 'error.svg',
+  }
+  const ASSETS_DIRECTORY = config.appAddress+'/chat/client/assets';
+
   const createChatDOM = () => {
     const container = $('<div/>');
     container.css({
@@ -109,22 +116,22 @@ const DOMHandler = (() => {
     });
     status_bar.appendTo(chat_app);
 
-    const status_text = $('<div/>');
-    status_text.html('Online');
-    status_text.css({
+    chatDOM.status_text = $('<div/>');
+    chatDOM.status_text.html('Online');
+    chatDOM.status_text.css({
       'width':'200px',
       'text-align':'center',
     }); 
-    status_text.appendTo(status_bar);
+    chatDOM.status_text.appendTo(status_bar);
 
-    const status_icon = $('<img />');
-    status_icon.attr('src',config.appAddress+'/chat/client/assets/ok.svg');
-    status_icon.css({
+    chatDOM.status_icon = $('<img />');
+    chatDOM.status_icon.attr('src',ASSETS_DIRECTORY+'/'+STATUS.OK);
+    chatDOM.status_icon.css({
       'width':'20px',
       'position':'absolute',
       'right': '10px',
     });
-    status_icon.appendTo(status_bar);
+    chatDOM.status_icon.appendTo(status_bar);
 
   };
 
@@ -214,6 +221,11 @@ const DOMHandler = (() => {
 
   const updateScroll = () => chatDOM.messages.animate({scrollTop: chatDOM.messages.get(0).scrollHeight},1000);
 
+  const setStatus = (icon,text) => {
+    chatDOM.status_icon.attr('src',ASSETS_DIRECTORY+'/'+icon);
+    chatDOM.status_text.html(text);
+  }
+
   const createChat = (settings,eventHandler) => {
        createChatDOM();
        console.log(chatDOM);
@@ -228,6 +240,9 @@ const DOMHandler = (() => {
     addUserMessage,
     getInputText,
     clearInput,
+    setStatus,
+
+    STATUS,
   }
 })();
 
@@ -242,24 +257,53 @@ const ConnectionHandler = (() => {
     });
   };
 
-  const sendQuery = (message,eventHandler) => {
-    $.post({
-      url: `${config.appAddress}/chat/server/sendQuery?bot_id=${connection.bot_id}`,
-      data: JSON.stringify({
-        message,
-        is_running: true,
-      }),
-      contentType: 'application/json',
-    }).done(data => {
-      eventHandler(JSON.parse(data))
-    });
-  };
+  const sendMessage = (message) => new Promise(
+    (resolve,reject) => {
+      $.post({
+        url: `${config.appAddress}/chat/server/sendQuery?bot_id=${connection.bot_id}`,
+        data: JSON.stringify({
+          message,
+          is_running: true,
+        }),
+        contentType: 'application/json',
+      }).done(data => {
+        resolve(JSON.parse(data));
+      }).fail(error => {
+        reject(error.statusText);
+      })
+    }
+  );
   
   return {
     hasConnected,
     startConversation,
-    sendQuery,
+    sendMessage,
   };
+})();
+
+const MessageQueue = (() => {
+  const TIMEOUT = 2000;
+
+  let queue = [];
+  let timer;
+
+  const add = (message) => {
+    queue.push(message);
+    if(timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(send,TIMEOUT);
+  };
+
+  const send = () => {
+    const packet = queue.join('\n');
+    queue = [];
+    ChatApp.sendMessage(packet);
+  };
+
+  return {
+    add,
+  }
 })();
 
 const ChatApp = (() => {
@@ -274,17 +318,30 @@ const ChatApp = (() => {
     if(text !== ''){
       DOMHandler.addUserMessage(text);
       if(ConnectionHandler.hasConnected()){
-        ConnectionHandler.sendQuery(text,handleBotSendMessage);
+        MessageQueue.add(text);
       }
       else {
         ConnectionHandler.startConversation();
       }
     }
-  }
+  };
 
   const handleBotSendMessage = (data) => {
     DOMHandler.addBotMessage(data.message);
-  }
+  };
+
+  const sendMessage = message => {
+    DOMHandler.setStatus(DOMHandler.STATUS.LOADING,'Bot is typing...');
+    ConnectionHandler.sendMessage(message)
+      .then(response => {
+        DOMHandler.setStatus(DOMHandler.STATUS.OK,'Online');
+        handleBotSendMessage(response);
+      }
+      ).catch(error => {
+        DOMHandler.setStatus(DOMHandler.STATUS.ERROR,error); 
+      });
+  };
+
   const init = () => {
     
     settings = loadSettings();
@@ -296,6 +353,7 @@ const ChatApp = (() => {
   return {
     init,
     handleUserSendMessage,
+    sendMessage,
   }
 })();
 
