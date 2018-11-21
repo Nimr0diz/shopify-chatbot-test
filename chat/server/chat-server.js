@@ -55,6 +55,7 @@ const ChatServer = (() => {
     return {
       bot_id,
       message: 'How can I help you?',
+      options: ['banana','apple'],
     };
   };
 
