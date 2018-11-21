@@ -167,6 +167,10 @@ const DOMHandler = (() => {
       'width':' 60px',
       'height':' 60px',
       'border-radius':' 50%',
+      'line-height':' 60px',
+      'text-align':' center',
+      'color':' white',
+      'font-weight':' 600',
     });
     avatar.appendTo(message);
     
@@ -215,6 +219,7 @@ const DOMHandler = (() => {
       'background-color':' #f5886e',
       'float':' left',
     });
+    avatar.html("BOT");
 
     content.css({
       'margin-left':' 20px',
@@ -259,7 +264,7 @@ const DOMHandler = (() => {
       'background-color':' #fdbf68',
       'float':' right',
     });
-
+    avatar.html("YOU");
     content.css({
       'margin-right':' 20px',
       'float': 'right',
