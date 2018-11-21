@@ -88,10 +88,27 @@ const DOMHandler = (() => {
       'border': '2px solid #a3d063',
       'color': '#fff',
       'cursor': 'pointer',
-      'transition': 'all 0.2s linear',
+      'transition': 'all 0.1s linear',
       'text-align': 'center',
       'float': 'right',
     });
+    chatDOM.button.mouseenter(function() {
+      chatDOM.button.css({
+        'background-color': '#c3e083',
+      })
+    });
+    chatDOM.button.click(function() {
+      chatDOM.button.css({
+        'background-color': '#a3d063',
+      })
+      return true;
+    });
+    chatDOM.button.mouseleave(function() {
+      chatDOM.button.css({
+        'background-color': '#a3d063',
+      })
+    });
+
     chatDOM.button.appendTo(bottom);
 
     const button_text = $('<div/>');
@@ -228,7 +245,6 @@ const DOMHandler = (() => {
 
   const createChat = (settings,eventHandler) => {
        createChatDOM();
-       console.log(chatDOM);
        addBotMessage(settings.open_message);
        chatDOM.button.on('click',eventHandler);
        chatDOM.input.on('keypress',(e) => e.which !== 13 || eventHandler(e));
