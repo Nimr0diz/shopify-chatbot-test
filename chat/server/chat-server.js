@@ -52,7 +52,10 @@ const ChatServer = (() => {
     //TODO merchant_id = DB.getMerchantByShop(shop).id;
     const merchant_id = 0;
     bot_id = createNewBot(merchant_id);
-    return {bot_id};
+    return {
+      bot_id,
+      message: 'How can I help you?',
+    };
   };
 
   return {

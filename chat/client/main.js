@@ -240,7 +240,10 @@ const DOMHandler = (() => {
 
   const setStatus = (icon,text) => {
     chatDOM.status_icon.attr('src',ASSETS_DIRECTORY+'/'+icon);
-    chatDOM.status_text.html(text);
+    chatDOM.status_icon.bind('load',() => {
+      chatDOM.status_text.html(text);
+      chatDOM.status_icon.unbind('load');
+    });
   }
 
   const createChat = (settings,eventHandler) => {
@@ -267,11 +270,19 @@ const ConnectionHandler = (() => {
 
   const hasConnected = () => !!connection.bot_id;
 
-  const startConversation = () => {
-    $.get(`${config.appAddress}/chat/server/init?shop=shop.com`).done((data)=>{
-      connection.bot_id = JSON.parse(data).bot_id;
-    });
-  };
+  const startConversation = () => new Promise(
+    (resolve,reject) => {
+      $.get(`${config.appAddress}/chat/server/init?shop=shop.com`)
+      .done(data => {
+        const response = JSON.parse(data);
+        connection.bot_id = response.bot_id;
+        resolve(response);
+      })
+      .fail(error => {
+        reject(error.statusText)
+      });
+    }
+  );
 
   const sendMessage = (message) => new Promise(
     (resolve,reject) => {
@@ -337,7 +348,14 @@ const ChatApp = (() => {
         MessageQueue.add(text);
       }
       else {
-        ConnectionHandler.startConversation();
+        ConnectionHandler.startConversation()
+          .then(response => {
+            DOMHandler.setStatus(DOMHandler.STATUS.OK,'Online');
+            handleBotSendMessage(response);
+          }
+          ).catch(error => {
+            DOMHandler.setStatus(DOMHandler.STATUS.ERROR,error); 
+          });
       }
     }
   };
