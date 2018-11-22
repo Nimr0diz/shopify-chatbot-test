@@ -44,7 +44,11 @@ const ChatServer = (() => {
     if(query.message.indexOf('what i love') > -1) {
       response.message = `You love ${bot.collectedData.loved.join(', ')}`;
     }
-
+    if(query.message === 'cat') {
+      response.message = 'Is this a dog?';
+      response.options = ['Yes','No'];
+      response.image = 'https://loremflickr.com/300/300';
+    }
     return response;
   }
 

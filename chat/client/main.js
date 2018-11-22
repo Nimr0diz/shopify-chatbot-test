@@ -227,14 +227,28 @@ const DOMHandler = (() => {
 
     const text_wrapper = $('<div/>');
     text_wrapper.css({
-      'display':' inline-block',
+      'display':' flex',
+      'flex-direction':'column',
       'padding':' 5px 10px',
       'border-radius':' 6px',
       'position':' relative',
-      'line-height':'1.4',
+      'line-height':'1.4'
       
     });
     text_wrapper.appendTo(content);
+    const image = $('<div/>');
+    image.css({
+      'width': '240px',
+      'height': '240px',
+      'background-image': `url('${data.image}')`,
+      'background-color':' white',
+      'background-size':' contain',
+      'background-position':' center',
+      'background-repeat':' no-repeat',
+      'align-self':' center',
+      'margin':' 10px 0px',
+    });
+    data.image && image.appendTo(text_wrapper);
 
     const text = $('<div/>');
     text.html(data.message);
