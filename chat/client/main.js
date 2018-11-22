@@ -228,9 +228,11 @@ const DOMHandler = (() => {
     const text_wrapper = $('<div/>');
     text_wrapper.css({
       'display':' inline-block',
-      'padding':' 20px',
+      'padding':' 5px 10px',
       'border-radius':' 6px',
       'position':' relative',
+      'line-height':'1.4',
+      
     });
     text_wrapper.appendTo(content);
 
