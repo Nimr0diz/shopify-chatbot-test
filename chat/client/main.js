@@ -11,28 +11,69 @@ const DOMHandler = (() => {
     ERROR: 'error.svg',
   }
   const ASSETS_DIRECTORY = config.appAddress+'/chat/client/assets';
+  
+  let isOpen = true;
 
   const createChatDOM = () => {
     const container = $('<div/>');
     container.css({
-      'bottom': '10px',
+      'bottom': '0px',
       'position': 'sticky',
       'padding-bottom': '30px',
       'padding-left': '20px',
+      'z-index':'999',
     });
+
+    isItMobile() && container.css({
+      'padding-left':'0px',
+      'padding-bottom':'0px',
+    });
+
     container.appendTo('body');
 
     const chat_app = $('<div/>');
     chat_app.css({
       'width': 'calc(100% - 20px);',
-      'width': '400px',
+      'max-width': '400px',
       'border-radius': '10px',
       'background-color': '#fff',
-      'box-shadow': '0 10px 20px rgba(0, 0, 0, 0.15)',
+      'box-shadow': 'rgba(0, 0, 0, 0.15) 0px 5px 10px 15px',
       'background-color': '#f8f8f8',
       'overflow': 'hidden',
     });
     chat_app.appendTo(container);
+
+    const top_bar = $('<div/>');
+    top_bar.css({
+      'background-color':' #fff',
+      'width':' 100%',
+      'height':' 40px',
+      'display':' flex',
+      'align-items':' center',
+      'padding':' 0px 10px',
+    });
+    top_bar.appendTo(chat_app);
+
+    chatDOM.toggle_button = $('<div/>');
+    chatDOM.toggle_button.html('-');
+    chatDOM.toggle_button.css({
+      'width':' 30px',
+      'height':' 30px',
+      'border-radius':' 50%',
+      'line-height':' 26px',
+      'text-align':' center',
+      'color':' white',
+      'font-weight':' 600',
+      'background-color':'#75C964',
+      'font-size':'32px',
+      'user-select':'none',
+      'cursor':'pointer',
+    });
+    chatDOM.toggle_button.on('click', ChatApp.toggleWindow);
+    chatDOM.toggle_button.appendTo(top_bar);
+
+    chatDOM.chat_content = $('<div/>');
+    chatDOM.chat_content.appendTo(chat_app);
 
     chatDOM.messages = $('<ul/>');
     chatDOM.messages.css({
@@ -43,7 +84,7 @@ const DOMHandler = (() => {
       'height': '347px',
       'overflow-y': 'scroll',
     });
-    chatDOM.messages.appendTo(chat_app);
+    chatDOM.messages.appendTo(chatDOM.chat_content);
 
     const bottom = $('<div/>');
     bottom.css({
@@ -51,7 +92,7 @@ const DOMHandler = (() => {
       'background-color': '#fff',
       'padding': '20px 20px',
     });
-    bottom.appendTo(chat_app);
+    bottom.appendTo(chatDOM.chat_content);
 
     const input_wrapper = $('<div/>');
     input_wrapper.css({
@@ -92,18 +133,18 @@ const DOMHandler = (() => {
       'text-align': 'center',
       'float': 'right',
     });
-    chatDOM.button.mouseenter(function() {
+    chatDOM.button.mouseenter(() => {
       chatDOM.button.css({
         'background-color': '#c3e083',
       })
     });
-    chatDOM.button.click(function() {
+    chatDOM.button.click(() => {
       chatDOM.button.css({
         'background-color': '#a3d063',
       })
       return true;
     });
-    chatDOM.button.mouseleave(function() {
+    chatDOM.button.mouseleave(() => {
       chatDOM.button.css({
         'background-color': '#a3d063',
       })
@@ -241,7 +282,7 @@ const DOMHandler = (() => {
     data.options && data.options.forEach(opt =>{
       const option = $('<div/>');
       option.html(opt);
-      option.on('click',() => ChatApp.handleOptionClick(opt,options));
+      option.one('click',() => ChatApp.handleOptionClick(opt,options));
       option.css({
         'padding':' 3px 10px',
         'border-radius':' 6px',
@@ -296,6 +337,21 @@ const DOMHandler = (() => {
     }
   );
 
+  const isItMobile = () => Math.min($(window).width(), $(window).height()) < 400;
+  
+  const changeToggleButtonState = state => {
+    console.log(state);
+    if(state === 'minimize') {
+      chatDOM.toggle_button.html('-');
+    }else if(state === 'maximize') {
+      chatDOM.toggle_button.html('+');
+    }
+  };
+
+  const toggleChat = () => new Promise(
+    (resolve,reject) => chatDOM.chat_content.slideToggle(1000,resolve)
+  );
+
   const createChat = (settings) => {
        createChatDOM();
        addBotMessage({message: settings.open_message});
@@ -311,8 +367,11 @@ const DOMHandler = (() => {
     clearInput,
     setStatus,
     hideOptions,
-
+    changeToggleButtonState,
+    toggleChat,
+    
     STATUS,
+    isOpen,
   }
 })();
 
@@ -434,6 +493,13 @@ const ChatApp = (() => {
       });
   }
 
+  const toggleWindow = () => {
+    const button_status = DOMHandler.isOpen ? 'maximize' : 'minimize';
+    DOMHandler.isOpen = !DOMHandler.isOpen;
+    DOMHandler.toggleChat()
+      .then(() => DOMHandler.changeToggleButtonState(button_status));
+  }
+
   const init = () => {
     
     settings = loadSettings();
@@ -447,6 +513,7 @@ const ChatApp = (() => {
     handleUserInput,
     sendMessage,
     handleOptionClick,
+    toggleWindow,
   }
 })();
 
