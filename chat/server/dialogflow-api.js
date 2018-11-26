@@ -30,7 +30,7 @@ const DialogFlowApi = (() =>{
           }else{
             resp = responses[0];
             resolve({
-              intentName: resp.queryResult.intent.name,
+              intentName: resp.queryResult.intent.name.split('/').reverse()[0],
               text: resp.queryResult.fulfillmentText,
               data: resp.queryResult.parameters.fields,
             });
@@ -42,53 +42,7 @@ const DialogFlowApi = (() =>{
     });
 
   };
-  const test = () => {
-        // You can find your project ID in your Dialogflow agent settings
-    const projectId = 'sizedetector'; //https://dialogflow.com/docs/agents#settings
-    const sessionId = 'quickstart-session-id';
-    const query = '1.6m';
-    const languageCode = 'en-US';
-
-    // Instantiate a DialogFlow client.
-    const dialogflow = require('dialogflow');
-    const sessionClient = new dialogflow.SessionsClient();
-
-    // Define session path
-    const sessionPath = sessionClient.sessionPath(projectId, sessionId);
-
-    // The text query request.
-    const request = {
-      session: sessionPath,
-      queryInput: {
-        text: {
-          text: query,
-          languageCode: languageCode,
-        },
-      },
-    };
-
-    // Send request and log result
-    sessionClient
-      .detectIntent(request)
-      .then(responses => {
-        console.log(responses);
-        console.log('###############################################3');
-        console.log('Detected intent');
-        const result = responses[0].queryResult;
-        console.log(`  Query: ${result.queryText}`);
-        console.log(`  Response: ${result.fulfillmentText}`);
-        if (result.intent) {
-          console.log(`  Intent: ${result.intent.displayName}`);
-        } else {
-          console.log(`  No intent matched.`);
-        }
-      })
-      .catch(err => {
-        console.error('ERROR:', err);
-      });
-  };
   return {
-    test,
     init,
     sendQuery,
   }

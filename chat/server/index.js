@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const ChatServer = require('./chat-server');
+ChatServer.init();
 
 router.get('/init',(req,res) => {
   ChatServer.startConversation(req.query.shop)
@@ -10,6 +11,11 @@ router.get('/init',(req,res) => {
 
 router.post('/sendQuery',(req,res) => {
   ChatServer.submitQuery(req.query.bot_id,req.body)
+    .then(response => res.send(JSON.stringify(response)));
+});
+
+router.get('/getCalculation',(req,res) => {
+  ChatServer.getCalculation(req.query.bot_id)
     .then(response => res.send(JSON.stringify(response)));
 });
 

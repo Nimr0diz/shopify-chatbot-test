@@ -6,7 +6,6 @@ const path = require('path');
 const { apiKey } = require('../config');
 
 router.get('/', (req,res) => {
-  console.log(req.headers.cookie);
   res.render('home', {
     title: 'Home', 
     api_key: apiKey,

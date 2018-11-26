@@ -356,7 +356,6 @@ const DOMHandler = (() => {
   const isItMobile = () => Math.min($(window).width(), $(window).height()) < 400;
   
   const changeToggleButtonState = state => {
-    console.log(state);
     if(state === 'minimize') {
       chatDOM.toggle_button.html('-');
     }else if(state === 'maximize') {
@@ -416,7 +415,7 @@ const ConnectionHandler = (() => {
         url: `${config.appAddress}/chat/server/sendQuery?bot_id=${connection.bot_id}`,
         data: JSON.stringify({
           message,
-          is_running: true,
+          isRunning: true,
         }),
         contentType: 'application/json',
       }).done(data => {
@@ -426,11 +425,24 @@ const ConnectionHandler = (() => {
       })
     }
   );
+
+  const askForCalculation = () => new Promise(
+    (resolve,reject) => {
+      $.get(`${config.appAddress}/chat/server/getCalculation?bot_id=${connection.bot_id}`)
+      .done(data => {
+        resolve(JSON.parse(data));
+      })
+      .fail(error => {
+        reject(error.statusText);
+      });
+    }
+  );
   
   return {
     hasConnected,
     startConversation,
     sendMessage,
+    askForCalculation,
   };
 })();
 
@@ -480,16 +492,19 @@ const ChatApp = (() => {
   };
 
   const handleBotSendMessage = (data) => {
-    console.log(data);
+    if(data.startCalculating) {
+      ConnectionHandler.askForCalculation()
+        .then(handleBotSendMessage);
+    }else{
+      DOMHandler.setStatus(DOMHandler.STATUS.OK,'Online');
+    }
     DOMHandler.addBotMessage(data);
-    
   };
 
   const waitForServerResponse = promise => {
     DOMHandler.setStatus(DOMHandler.STATUS.LOADING,'Bot is typing...');
     promise
       .then(response => {
-        DOMHandler.setStatus(DOMHandler.STATUS.OK,'Online');
         handleBotSendMessage(response);
       }
       ).catch(error => {

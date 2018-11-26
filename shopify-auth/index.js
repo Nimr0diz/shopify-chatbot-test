@@ -13,7 +13,6 @@ router.get('/',  (req, res) => {
   const shop = req.query.shop;
   if (shop) {
     const state = nonce();
-    console.log(state); 
     const redirectUri = appAddress + '/shopify/callback';
     const installUrl = 'https://' + shop +
         '/admin/oauth/authorize?client_id=' + apiKey +
