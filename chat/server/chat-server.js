@@ -1,7 +1,10 @@
 const Guid = require('guid');
+const DialogFlowApi = require('./dialogflow-api');
+
 
 const ChatServer = (() => {
   const liveBots = {};
+  DialogFlowApi.init();
 
   const createNewBot = merchant_id => {
     const newBot = {
@@ -10,7 +13,7 @@ const ChatServer = (() => {
       collectedData: {},
     };
 
-    bot_id = Guid.create();
+    bot_id = Guid.create().value;
 
     liveBots[bot_id] = newBot;
     
@@ -20,47 +23,32 @@ const ChatServer = (() => {
   const submitQuery = (bot_id, query) => {
     const bot = liveBots[bot_id];
     bot.conversation.push(query.message);
-    
-    const response = {
-      options: [],
-      is_running: true,
-    };
-    if(query.message.indexOf('my name is') > -1) {
-      bot.collectedData.name = query.message.split('my name is ')[1];
-      response.message = 'Ok';
-    }
-    if(query.message.indexOf('i love ') > -1) {
-      if(!bot.collectedData.loved) {
-        bot.collectedData.loved = [];
-      } 
-      bot.collectedData.loved.push(query.message.split('i love ')[1])
-      response.message = 'Ok';
-    }
-
-    if(query.message.indexOf('what is my name') > -1){
-      response.message =`Your name is ${ bot.collectedData.name}`;
-    }
-
-    if(query.message.indexOf('what i love') > -1) {
-      response.message = `You love ${bot.collectedData.loved.join(', ')}`;
-    }
-    if(query.message === 'cat') {
-      response.message = 'Is this a dog?';
-      response.options = ['Yes','No'];
-      response.image = 'https://loremflickr.com/300/300';
-    }
-    return response;
-  }
+    return new Promise((resolve,reject) => {
+      DialogFlowApi.sendQuery(bot_id,query.message)
+        .then(response => {
+          resolve({
+            message: response.text,
+            options: [],
+            is_running: true,
+          });
+        });
+    });
+  };
 
   const startConversation = shop => {
     //TODO merchant_id = DB.getMerchantByShop(shop).id;
     const merchant_id = 0;
     bot_id = createNewBot(merchant_id);
-    return {
-      bot_id,
-      message: 'How can I help you?',
-      options: ['banana','apple'],
-    };
+    return new Promise((resolve,reject) => {
+      DialogFlowApi.sendQuery(bot_id,'Hello')
+        .then(response => {
+          resolve({
+            bot_id,
+            message: response.text,
+            options: [],
+          });
+        });
+    });
   };
 
   return {
