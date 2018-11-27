@@ -9,7 +9,7 @@ const router = express.Router();
 
 const {
   apiKey, apiSecret, scopes, appAddress,
-} = require.main.require('config');
+} = require('../../config');
 
 router.get('/', (req, res) => {
   const { shop } = req.query;
