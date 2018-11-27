@@ -6,127 +6,125 @@ const ChatServer = (() => {
   const liveBots = {};
   const intents = {};
 
-  const createNewBot = merchant_id => {
+  const createNewBot = (merchantId) => {
     const newBot = {
-      merchant_id,
+      merchantId,
       conversation: [],
       collectedData: {},
     };
 
-    bot_id = Guid.create().value;
+    const botId = Guid.create().value;
 
-    liveBots[bot_id] = newBot;
-    
-    return bot_id;
-  }
+    liveBots[botId] = newBot;
 
-  const submitQuery = (bot_id, query) => {
-    const bot = liveBots[bot_id];
+    return botId;
+  };
+
+  const submitQuery = (botId, query) => {
+    const bot = liveBots[botId];
     bot.conversation.push(query.message);
-    return new Promise((resolve,reject) => {
-      DialogFlowApi.sendQuery(bot_id,query.message)
-        .then(response => {
-          const {handleParameters, options, endOfConversation} = intents[response.intentName];
-          bot.collectedData  = handleParameters
-          ? {...bot.collectedData, ...handleParameters(response.data)}
-          : bot.collectedData;
+    return new Promise((resolve, reject) => {
+      DialogFlowApi.sendQuery(botId, query.message)
+        .then((response) => {
+          const { handleParameters, options, endOfConversation } = intents[response.intentName];
+          bot.collectedData = handleParameters
+            ? { ...bot.collectedData, ...handleParameters(response.data) }
+            : bot.collectedData;
           resolve({
             message: response.text,
             options: options || [],
             isRunning: true,
             startCalculating: endOfConversation,
           });
-        });
+        })
+        .catch(reject);
     });
   };
 
-  const startConversation = shop => {
-    //TODO merchant_id = DB.getMerchantByShop(shop).id;
-    const merchant_id = 0;
-    bot_id = createNewBot(merchant_id);
-    return new Promise((resolve,reject) => {
-      DialogFlowApi.sendQuery(bot_id,'Hello')
-        .then(response => {
+  const startConversation = (shop) => {
+    // TODO merchantId = DB.getMerchantByShop(shop).id;
+    const merchantId = 0;
+    const botId = createNewBot(merchantId);
+    return new Promise((resolve, reject) => {
+      DialogFlowApi.sendQuery(botId, 'Hello')
+        .then((response) => {
           resolve({
-            bot_id,
+            botId,
             message: response.text,
             options: [],
           });
-        });
+        })
+        .catch(reject);
     });
   };
 
-  const getCalculation = bot_id => {
-    const {height, weight, braSize} = liveBots[bot_id].collectedData;
-    return new Promise((resolve,reject) => {
+  const getCalculation = (botId) => {
+    const { height, weight, braSize } = liveBots[botId].collectedData;
+    return new Promise((resolve, reject) => {
       resolve({
         message: `You are ${height.value} ${height.unit} tall and weigh ${weight.value} ${weight.unit}.
         Your bra is ${braSize.band}${braSize.cup}, Correct?`,
-        options: ['Yes','No'],
+        options: ['Yes', 'No'],
         isRunning: false,
-      })
+      });
     });
-  }
+  };
 
   const init = () => {
     DialogFlowApi.init();
-    
-    //welcome
+
+    // welcome
     intents['63d8e6b6-53c7-438b-be0a-6317b41e7761'] = {};
 
-    //get height
+    // get height
     intents['b8851e84-3c8e-4584-996f-9b042366e8b9'] = {
-      handleParameters: (data) => ({
+      handleParameters: data => ({
         height: {
           unit: data['unit-length'].structValue.fields.unit.stringValue,
           value: data['unit-length'].structValue.fields.amount.numberValue,
-        }
+        },
       }),
     };
 
-    //get weight
+    // get weight
     intents['dbbbd00d-11a0-4c0e-b38e-0b04a965435b'] = {
-      handleParameters: (data) => ({
+      handleParameters: data => ({
         weight: {
           unit: data['unit-weight'].structValue.fields.unit.stringValue,
           value: data['unit-weight'].structValue.fields.amount.numberValue,
-        }
+        },
       }),
     };
 
-    //get small bra
+    // get small bra
     intents['a3c13a1a-2ac4-46d9-bceb-51e53206b1e6'] = {
       endOfConversation: true,
-      handleParameters: (data) => ({
+      handleParameters: data => ({
         braSize: {
           cup: data['bra-small-cup'].stringValue,
-          band: data['number'].numberValue,
-        }
+          band: data.number.numberValue,
+        },
       }),
     };
 
-    //get large bra
+    // get large bra
     intents['31edcd94-38bf-4c2c-a468-3564e1c8cc5c'] = {
-      options: ['US','UK','Australia'],
-      handleParameters: (data) => ({
+      options: ['US', 'UK', 'Australia'],
+      handleParameters: data => ({
         braSize: {
           cup: data['bra-large-cup'].stringValue,
-          band: data['number'].numberValue,
-        }
+          band: data.number.numberValue,
+        },
       }),
     };
 
-    //get bra system
+    // get bra system
     intents['2ec7179f-e6bc-43c5-a217-63904a384d0e'] = {
       endOfConversation: true,
-      handleParameters: (data) => ({
+      handleParameters: data => ({
         braSystem: data['bra-system'].stringValue,
       }),
     };
-
-
-
-
   };
 
   return {

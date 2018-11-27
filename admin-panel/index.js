@@ -1,15 +1,15 @@
 const express = require('express');
-const router = express.Router();
 const cookie = require('cookie');
-const path = require('path');
+
+const router = express.Router();
 
 const { apiKey } = require('../config');
 
-router.get('/', (req,res) => {
+router.get('/', (req, res) => {
   res.render('home', {
-    title: 'Home', 
+    title: 'Home',
     api_key: apiKey,
-    shop:  req.headers.cookie  && cookie.parse(req.headers.cookie).shop,
+    shop: req.headers.cookie && cookie.parse(req.headers.cookie).shop,
   });
 });
 

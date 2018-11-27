@@ -1,15 +1,15 @@
 const dialogflow = require('dialogflow');
 
-const DialogFlowApi = (() =>{
+const DialogFlowApi = (() => {
   const PROJECT_ID = 'sizedetector';
   const LANGUAGE_CODE = 'en-US';
   let sessionClient;
 
   const init = () => {
     sessionClient = new dialogflow.SessionsClient();
-  }
+  };
 
-  const sendQuery = (sessionId,query) => {
+  const sendQuery = (sessionId, query) => {
     const sessionPath = sessionClient.sessionPath(PROJECT_ID, sessionId);
 
     const request = {
@@ -21,14 +21,14 @@ const DialogFlowApi = (() =>{
         },
       },
     };
-    return new Promise((resolve,reject) => {
+    return new Promise((resolve, reject) => {
       sessionClient
         .detectIntent(request)
-        .then(responses => {
-          if(!responses){
-            reject('No response.');
-          }else{
-            resp = responses[0];
+        .then((responses) => {
+          if (!responses) {
+            reject(new Error('No response.'));
+          } else {
+            const [resp] = responses;
             resolve({
               intentName: resp.queryResult.intent.name.split('/').reverse()[0],
               text: resp.queryResult.fulfillmentText,
@@ -36,16 +36,15 @@ const DialogFlowApi = (() =>{
             });
           }
         })
-        .catch(error => {
+        .catch((error) => {
           reject(error);
-        })
+        });
     });
-
   };
   return {
     init,
     sendQuery,
-  }
+  };
 })();
 
 module.exports = DialogFlowApi;

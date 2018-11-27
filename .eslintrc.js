@@ -3,9 +3,12 @@ module.exports = {
  "env": {
  "node": true,
  "es6": true,
- "browser": true
+ "browser": true,
+ "jquery": true,
  },
  "rules": {
- // your custom rules here
+  "no-use-before-define":["warn"],
+  "arrow-parens": ["error", "always"],
+  "consistent-return":["warn"],
  }
 }
