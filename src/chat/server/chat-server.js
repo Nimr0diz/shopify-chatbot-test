@@ -10,7 +10,7 @@ const ChatServer = (() => {
     const newBot = {
       merchantId,
       conversation: [],
-      collectedData: {},
+      collectedData: { height: {}, weight: {}, braSize: {} },
     };
 
     const botId = Guid.create().value;
@@ -26,7 +26,7 @@ const ChatServer = (() => {
     return new Promise((resolve, reject) => {
       DialogFlowApi.sendQuery(botId, query.message)
         .then((response) => {
-          const { handleParameters, options, endOfConversation } = intents[response.intentName];
+          const { handleParameters, options, endOfConversation } = intents[response.intentName] || {};
           bot.collectedData = handleParameters
             ? { ...bot.collectedData, ...handleParameters(response.data) }
             : bot.collectedData;
