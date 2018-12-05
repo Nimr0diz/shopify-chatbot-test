@@ -10,6 +10,6 @@ module.exports = {
   "no-use-before-define":["warn"],
   "arrow-parens": ["error", "always"],
   "consistent-return":["warn"],
-  "max-len": ["error", { "code": 80 }],
+  "max-len": ["error", { "code": 80, "ignoreTemplateLiterals": true, "ignoreStrings": true }],
  }
 }
