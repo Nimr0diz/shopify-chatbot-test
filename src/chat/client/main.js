@@ -1,5 +1,5 @@
 const config = {
-  appAddress: 'https://ad68d9ca.ngrok.io',
+  appAddress: 'https://nimrod-chatbot.localtunnel.me',
 };
 
 const DOMHandler = (() => {
@@ -13,7 +13,10 @@ const DOMHandler = (() => {
 
   const isOpen = true;
 
-  const isItMobile = () => Math.min($(window).width(), $(window).height()) < 400;
+  const isItMobile = () => Math.min(
+    $(window).width(),
+    $(window).height(),
+  ) < 400;
 
   const createChatDOM = () => {
     const container = $('<div/>');
@@ -380,7 +383,10 @@ const DOMHandler = (() => {
     createChatDOM();
     addBotMessage({ message: settings.open_message });
     chatDOM.button.on('click', ChatApp.handleUserInput);
-    chatDOM.input.on('keypress', (e) => e.which !== 13 || ChatApp.handleUserInput());
+    chatDOM.input.on(
+      'keypress',
+      (e) => e.which !== 13 || ChatApp.handleUserInput(),
+    );
   };
 
   return {
@@ -402,14 +408,14 @@ const DOMHandler = (() => {
 const ConnectionHandler = (() => {
   const connection = {};
 
-  const hasConnected = () => !!connection.bot_id;
+  const hasConnected = () => !!connection.botId;
 
   const startConversation = () => new Promise(
     (resolve, reject) => {
       $.get(`${config.appAddress}/chat/server/init?shop=shop.com`)
         .done((data) => {
           const response = JSON.parse(data);
-          connection.bot_id = response.bot_id;
+          connection.botId = response.botId;
           resolve(response);
         })
         .fail((error) => {
@@ -421,7 +427,7 @@ const ConnectionHandler = (() => {
   const sendMessage = (message) => new Promise(
     (resolve, reject) => {
       $.post({
-        url: `${config.appAddress}/chat/server/sendQuery?bot_id=${connection.bot_id}`,
+        url: `${config.appAddress}/chat/server/sendQuery?botId=${connection.botId}`,
         data: JSON.stringify({
           message,
           isRunning: true,
@@ -437,7 +443,7 @@ const ConnectionHandler = (() => {
 
   const askForCalculation = () => new Promise(
     (resolve, reject) => {
-      $.get(`${config.appAddress}/chat/server/getCalculation?bot_id=${connection.bot_id}`)
+      $.get(`${config.appAddress}/chat/server/getCalculation?botId=${connection.botId}`)
         .done((data) => {
           resolve(JSON.parse(data));
         })
