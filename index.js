@@ -9,7 +9,7 @@ const app = express();
 
 const { appAddress } = require('./config');
 
-app.set('views', path.join(__dirname, 'admin-panel/views'));
+app.set('views', path.join(__dirname, 'src/admin-panel/views'));
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.json());
