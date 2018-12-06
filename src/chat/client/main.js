@@ -544,8 +544,12 @@ const ChatApp = (() => {
   };
 
   const init = () => {
-    const settings = loadSettings();
-    DOMHandler.createChat(settings);
+    if (Array.from(document.getElementsByTagName('meta'))
+      .find((meta) => meta.getAttribute('property') === 'og:type').getAttribute('content') === 'product'
+    ) {
+      const settings = loadSettings();
+      DOMHandler.createChat(settings);
+    }
   };
 
   return {
