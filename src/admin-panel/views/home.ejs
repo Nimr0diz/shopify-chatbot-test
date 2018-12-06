@@ -3,6 +3,7 @@
 <head>
 	<script src="https://cdn.shopify.com/s/assets/external/app.js"></script>
 	<script type="text/javascript">
+	alert('hello');
 	ShopifyApp.init({
 		apiKey: '<%= api_key %>',
 		shopOrigin: 'https://<%= shop %>.myshopify.com'
@@ -15,5 +16,6 @@
 </head>
 <body>
 	<a href="/addChat">Add Chat to store!</a>
+	<a href="/shopify?shop=<%= shop %>">Get OAuth again</a>
 </body>
 </html>

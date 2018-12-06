@@ -16,11 +16,11 @@ app.use(bodyParser.json());
 
 app.use(cors());
 
-app.get('/', (req, res) => res.redirect('/admin-panel'));
+// app.get('/', (req, res) => res.redirect('/admin-panel'));
 
 app.use('/shopify', require('./src/shopify-auth'));
 
-app.use('/admin-panel', require('./src/admin-panel'));
+app.use('/', require('./src/admin-panel'));
 
 app.use('/chat', require('./src/chat'));
 
