@@ -1,6 +1,6 @@
 const Guid = require('guid');
 const DialogFlowApi = require('./dialogflow-api');
-
+const db = require('../../db/test');
 
 const ChatServer = (() => {
   const liveBots = {};
@@ -27,6 +27,7 @@ const ChatServer = (() => {
       DialogFlowApi.sendQuery(botId, query.message)
         .then((response) => {
           const { handleParameters, options, endOfConversation } = intents[response.intentName] || {};
+          bot.conversation.push(response.text);
           bot.collectedData = handleParameters
             ? { ...bot.collectedData, ...handleParameters(response.data) }
             : bot.collectedData;
@@ -48,6 +49,7 @@ const ChatServer = (() => {
     return new Promise((resolve, reject) => {
       DialogFlowApi.sendQuery(botId, 'Hello')
         .then((response) => {
+          liveBots[botId].conversation.push(response.text);
           resolve({
             botId,
             message: response.text,
@@ -60,6 +62,7 @@ const ChatServer = (() => {
 
   const getCalculation = (botId) => {
     const { height, weight, braSize } = liveBots[botId].collectedData;
+    db.saveConversation(liveBots[botId].conversation);
     return new Promise((resolve, reject) => {
       resolve({
         message: `You are ${height.value} ${height.unit} tall and weigh ${weight.value} ${weight.unit}.

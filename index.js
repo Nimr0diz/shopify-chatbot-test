@@ -4,10 +4,11 @@ const cookie = require('cookie');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const express = require('express');
+const db = require('./src/db/test');
 
 const app = express();
 
-const { appAddress } = require('./config');
+const { appAddress, databaseCred } = require('./config');
 
 app.set('views', path.join(__dirname, 'src/admin-panel/views'));
 app.set('view engine', 'ejs');
@@ -41,6 +42,14 @@ app.get('/addChat', (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log('Example app listening on port 3000!'); // eslint-disable-line
-});
+/* eslint-disable no-console */
+db.connect(databaseCred)
+  .then(() => {
+    console.log('Connected to the database!');
+    app.listen(3000, () => {
+      console.log('Example app listening on port 3000!');
+    });
+  }).catch((error) => {
+    console.error('database connection failed:');
+    console.error(error.errmsg);
+  });
