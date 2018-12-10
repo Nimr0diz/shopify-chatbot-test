@@ -1,5 +1,5 @@
 const config = {
-  appAddress: 'https://nimrod-chatbot.localtunnel.me'
+  appAddress: 'https://nimrod-chatbot.localtunnel.me',
 };
 
 const DOMHandler = (() => {
@@ -7,13 +7,14 @@ const DOMHandler = (() => {
   const STATUS = {
     OK: 'ok.svg',
     LOADING: 'loading.svg',
-    ERROR: 'error.svg'
+    ERROR: 'error.svg',
   };
   const ASSETS_DIRECTORY = `${config.appAddress}/chat/client/assets`;
 
   const isOpen = true;
 
-  const isItMobile = () => Math.min($(window).width(), $(window).height()) < 400;
+  const isItMobile = () =>
+    Math.min($(window).width(), $(window).height()) < 400;
 
   const createChatDOM = () => {
     const container = $('<div/>');
@@ -22,13 +23,13 @@ const DOMHandler = (() => {
       position: 'sticky',
       'padding-bottom': '30px',
       'padding-left': '20px',
-      'z-index': '999'
+      'z-index': '999',
     });
 
     if (isItMobile()) {
       container.css({
         'padding-left': '0px',
-        'padding-bottom': '0px'
+        'padding-bottom': '0px',
       });
     }
 
@@ -41,7 +42,7 @@ const DOMHandler = (() => {
       'border-radius': '10px',
       'box-shadow': 'rgba(0, 0, 0, 0.15) 0px 5px 10px 15px',
       'background-color': '#f8f8f8',
-      overflow: 'hidden'
+      overflow: 'hidden',
     });
     chatApp.appendTo(container);
 
@@ -52,7 +53,7 @@ const DOMHandler = (() => {
       height: ' 40px',
       display: ' flex',
       'align-items': ' center',
-      padding: ' 0px 10px'
+      padding: ' 0px 10px',
     });
     topBar.appendTo(chatApp);
 
@@ -69,7 +70,7 @@ const DOMHandler = (() => {
       'background-color': '#75C964',
       'font-size': '32px',
       'user-select': 'none',
-      cursor: 'pointer'
+      cursor: 'pointer',
     });
     chatDOM.toggleButton.on('click', ChatApp.toggleWindow);
     chatDOM.toggleButton.appendTo(topBar);
@@ -84,7 +85,7 @@ const DOMHandler = (() => {
       padding: '20px 10px 0 10px',
       margin: '0px',
       height: '347px',
-      'overflow-y': 'scroll'
+      'overflow-y': 'scroll',
     });
     chatDOM.messages.appendTo(chatDOM.chat_content);
 
@@ -92,7 +93,7 @@ const DOMHandler = (() => {
     bottom.css({
       width: '100%',
       'background-color': '#fff',
-      padding: '20px 20px'
+      padding: '20px 20px',
     });
     bottom.appendTo(chatDOM.chat_content);
 
@@ -104,7 +105,7 @@ const DOMHandler = (() => {
       border: '1px solid #bcbdc0',
       width: 'calc(100% - 160px)',
       position: 'relative',
-      padding: '0 20px'
+      padding: '0 20px',
     });
     inputWrapper.appendTo(bottom);
 
@@ -117,7 +118,7 @@ const DOMHandler = (() => {
       width: 'calc(100% - 40px)',
       position: 'absolute',
       'outline-width': '0',
-      color: 'gray'
+      color: 'gray',
     });
     chatDOM.input.appendTo(inputWrapper);
 
@@ -133,22 +134,22 @@ const DOMHandler = (() => {
       cursor: 'pointer',
       transition: 'all 0.1s linear',
       'text-align': 'center',
-      float: 'right'
+      float: 'right',
     });
     chatDOM.button.mouseenter(() => {
       chatDOM.button.css({
-        'background-color': '#c3e083'
+        'background-color': '#c3e083',
       });
     });
     chatDOM.button.click(() => {
       chatDOM.button.css({
-        'background-color': '#a3d063'
+        'background-color': '#a3d063',
       });
       return true;
     });
     chatDOM.button.mouseleave(() => {
       chatDOM.button.css({
-        'background-color': '#a3d063'
+        'background-color': '#a3d063',
       });
     });
 
@@ -161,7 +162,7 @@ const DOMHandler = (() => {
       'font-weight': ' 300',
       display: ' inline-block',
       'line-height': ' 48px',
-      'user-select': 'none'
+      'user-select': 'none',
     });
     buttonText.appendTo(chatDOM.button);
 
@@ -172,7 +173,7 @@ const DOMHandler = (() => {
       display: 'flex',
       'align-items': 'center',
       'justify-content': 'center',
-      position: 'relative'
+      position: 'relative',
     });
     statusBar.appendTo(chatApp);
 
@@ -180,7 +181,7 @@ const DOMHandler = (() => {
     chatDOM.status_text.html('Online');
     chatDOM.status_text.css({
       width: '200px',
-      'text-align': 'center'
+      'text-align': 'center',
     });
     chatDOM.status_text.appendTo(statusBar);
 
@@ -189,7 +190,7 @@ const DOMHandler = (() => {
     chatDOM.status_icon.css({
       width: '20px',
       position: 'absolute',
-      right: '10px'
+      right: '10px',
     });
     chatDOM.status_icon.appendTo(statusBar);
   };
@@ -200,7 +201,7 @@ const DOMHandler = (() => {
       clear: ' both',
       overflow: ' hidden',
       'margin-bottom': ' 20px',
-      opacity: '0'
+      opacity: '0',
     });
     message.appendTo(chatDOM.messages);
 
@@ -212,7 +213,7 @@ const DOMHandler = (() => {
       'line-height': ' 60px',
       'text-align': ' center',
       color: ' white',
-      'font-weight': ' 600'
+      'font-weight': ' 600',
     });
     avatar.appendTo(message);
 
@@ -221,7 +222,7 @@ const DOMHandler = (() => {
       display: 'flex',
       'flex-direction': 'column',
       width: ' calc(100% - 85px)',
-      'min-width': ' 100px'
+      'min-width': ' 100px',
     });
     content.appendTo(message);
 
@@ -232,7 +233,7 @@ const DOMHandler = (() => {
       padding: ' 5px 10px',
       'border-radius': ' 6px',
       position: ' relative',
-      'line-height': '1.4'
+      'line-height': '1.4',
     });
     textWrapper.appendTo(content);
     const image = $('<div/>');
@@ -245,7 +246,7 @@ const DOMHandler = (() => {
       'background-position': ' center',
       'background-repeat': ' no-repeat',
       'align-self': ' center',
-      margin: ' 10px 0px'
+      margin: ' 10px 0px',
     });
 
     if (data.image) {
@@ -257,7 +258,7 @@ const DOMHandler = (() => {
     text.css({
       'font-size': ' 18px',
       'font-weight': ' 300',
-      color: ' #c48843'
+      color: ' #c48843',
     });
     text.appendTo(textWrapper);
 
@@ -267,7 +268,7 @@ const DOMHandler = (() => {
       avatar,
       content,
       textWrapper,
-      fadeIn: () => message.fadeTo(500, 1)
+      fadeIn: () => message.fadeTo(500, 1),
     };
   };
 
@@ -275,17 +276,17 @@ const DOMHandler = (() => {
     const { avatar, content, textWrapper, fadeIn } = addMessage(data);
     avatar.css({
       'background-color': ' #f5886e',
-      float: ' left'
+      float: ' left',
     });
     avatar.html('BOT');
 
     content.css({
       'margin-left': ' 20px',
-      float: 'left'
+      float: 'left',
     });
 
     textWrapper.css({
-      'background-color': ' #ffe6cb'
+      'background-color': ' #ffe6cb',
     });
 
     const options = $('<div/>');
@@ -293,7 +294,7 @@ const DOMHandler = (() => {
       display: 'flex',
       'flex-direction': 'column',
       'margin-left': '30px',
-      'max-width': '150px'
+      'max-width': '150px',
     });
     options.appendTo(content);
     if (data.options) {
@@ -308,7 +309,7 @@ const DOMHandler = (() => {
           'margin-top': '10px',
           display: 'inline-block',
           color: ' #c48843',
-          cursor: 'pointer'
+          cursor: 'pointer',
         });
         option.appendTo(options);
       });
@@ -321,16 +322,16 @@ const DOMHandler = (() => {
     const { avatar, content, textWrapper, fadeIn } = addMessage(data);
     avatar.css({
       'background-color': ' #fdbf68',
-      float: ' right'
+      float: ' right',
     });
     avatar.html('YOU');
     content.css({
       'margin-right': ' 20px',
-      float: 'right'
+      float: 'right',
     });
 
     textWrapper.css({
-      'background-color': ' #c7eafc'
+      'background-color': ' #c7eafc',
     });
     fadeIn();
   };
@@ -340,7 +341,10 @@ const DOMHandler = (() => {
   const clearInput = () => chatDOM.input.val('');
 
   const updateScroll = () =>
-    chatDOM.messages.animate({ scrollTop: chatDOM.messages.get(0).scrollHeight }, 1000);
+    chatDOM.messages.animate(
+      { scrollTop: chatDOM.messages.get(0).scrollHeight },
+      1000,
+    );
 
   const setStatus = (icon, text) => {
     chatDOM.status_icon.attr('src', `${ASSETS_DIRECTORY}/${icon}`);
@@ -370,7 +374,10 @@ const DOMHandler = (() => {
     createChatDOM();
     addBotMessage({ message: settings.open_message });
     chatDOM.button.on('click', ChatApp.handleUserInput);
-    chatDOM.input.on('keypress', (e) => e.which !== 13 || ChatApp.handleUserInput());
+    chatDOM.input.on(
+      'keypress',
+      (e) => e.which !== 13 || ChatApp.handleUserInput(),
+    );
   };
 
   return {
@@ -385,7 +392,7 @@ const DOMHandler = (() => {
     toggleChat,
 
     STATUS,
-    isOpen
+    isOpen,
   };
 })();
 
@@ -410,12 +417,14 @@ const ConnectionHandler = (() => {
   const sendMessage = (message) =>
     new Promise((resolve, reject) => {
       $.post({
-        url: `${config.appAddress}/chat/server/sendQuery?botId=${connection.botId}`,
+        url: `${config.appAddress}/chat/server/sendQuery?botId=${
+          connection.botId
+        }`,
         data: JSON.stringify({
           message,
-          isRunning: true
+          isRunning: true,
         }),
-        contentType: 'application/json'
+        contentType: 'application/json',
       })
         .done((data) => {
           resolve(JSON.parse(data));
@@ -427,7 +436,11 @@ const ConnectionHandler = (() => {
 
   const askForCalculation = () =>
     new Promise((resolve, reject) => {
-      $.get(`${config.appAddress}/chat/server/getCalculation?botId=${connection.botId}`)
+      $.get(
+        `${config.appAddress}/chat/server/getCalculation?botId=${
+          connection.botId
+        }`,
+      )
         .done((data) => {
           resolve(JSON.parse(data));
         })
@@ -440,7 +453,7 @@ const ConnectionHandler = (() => {
     hasConnected,
     startConversation,
     sendMessage,
-    askForCalculation
+    askForCalculation,
   };
 })();
 
@@ -465,13 +478,13 @@ const MessageQueue = (() => {
   };
 
   return {
-    add
+    add,
   };
 })();
 
 const ChatApp = (() => {
   const loadSettings = () => ({
-    open_message: 'Do you want to use our bot to measure your size?'
+    open_message: 'Do you want to use our bot to measure your size?',
   });
   const handleUserInput = () => {
     const text = DOMHandler.getInputText();
@@ -520,7 +533,9 @@ const ChatApp = (() => {
   const toggleWindow = () => {
     const buttonStatus = DOMHandler.isOpen ? 'maximize' : 'minimize';
     DOMHandler.isOpen = !DOMHandler.isOpen;
-    DOMHandler.toggleChat().then(() => DOMHandler.changeToggleButtonState(buttonStatus));
+    DOMHandler.toggleChat().then(() =>
+      DOMHandler.changeToggleButtonState(buttonStatus),
+    );
   };
 
   const init = () => {
@@ -539,7 +554,7 @@ const ChatApp = (() => {
     handleUserInput,
     sendMessage,
     handleOptionClick,
-    toggleWindow
+    toggleWindow,
   };
 })();
 

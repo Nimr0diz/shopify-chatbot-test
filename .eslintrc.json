@@ -6,11 +6,10 @@
     "es6": true,
     "browser": true,
     "jquery": true
-    },
+  },
   "rules": {
     "prettier/prettier": ["error"],
     "no-use-before-define": ["warn"],
-    "consistent-return": ["warn"],
-    "max-len": ["error", { "code": 80, "ignoreTemplateLiterals": true, "ignoreStrings": true }]
+    "consistent-return": ["warn"]
   }
 }

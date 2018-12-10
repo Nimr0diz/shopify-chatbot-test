@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
   res.render('home', {
     title: 'Home',
     api_key: apiKey,
-    shop: req.headers.cookie && cookie.parse(req.headers.cookie).shop
+    shop: req.headers.cookie && cookie.parse(req.headers.cookie).shop,
   });
 });
 

@@ -62,9 +62,9 @@ const ChatServer = (() => {
     const { height, weight, braSize } = liveBots[botId].collectedData;
     return new Promise((resolve, reject) => {
       resolve({
-        message: `You are ${height.value} ${height.unit} tall and weigh ${weight.value} ${
-          weight.unit
-        }.
+        message: `You are ${height.value} ${height.unit} tall and weigh ${
+          weight.value
+        } ${weight.unit}.
         Your bra is ${braSize.band}${braSize.cup}, Correct?`,
         options: ['Yes', 'No'],
         isRunning: false,

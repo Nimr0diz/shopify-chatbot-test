@@ -27,7 +27,9 @@ app.use('/chat', require('./src/chat'));
 app.get('/addChat', (req, res) => {
   request.post(
     {
-      url: `https://${cookie.parse(req.headers.cookie).shop}/admin/script_tags.json`,
+      url: `https://${
+        cookie.parse(req.headers.cookie).shop
+      }/admin/script_tags.json`,
       headers: {
         'X-Shopify-Access-Token': cookie.parse(req.headers.cookie).access_token,
       },
