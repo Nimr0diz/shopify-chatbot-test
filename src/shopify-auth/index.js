@@ -156,17 +156,17 @@ router.get('/allThemes', async (req, res) => {
     },
   );
 
-  const validation = await callToApi(
-    'put',
-    `/admin/themes/${mainTheme.id}/assets.json`,
-    token,
-    {
-      asset: {
-        key: productAsset.key,
-        value: "{% include 'customer-id' %}" + file.asset.value, //eslint-disable-line
-      },
-    },
-  );
+  // const validation = await callToApi(
+  //   'put',
+  //   `/admin/themes/${mainTheme.id}/assets.json`,
+  //   token,
+  //   {
+  //     asset: {
+  //       key: productAsset.key,
+  //       value: "{% include 'customer-id' %}" + file.asset.value, //eslint-disable-line
+  //     },
+  //   },
+  // );
   res.send('done');
 });
 
