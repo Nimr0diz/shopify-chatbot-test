@@ -7,32 +7,28 @@ const express = require('express');
 
 const router = express.Router();
 
-const {
-  apiKey, apiSecret, scopes, appAddress,
-} = require('../../config');
+const { apiKey, apiSecret, scopes, appAddress } = require('../../config');
 
 router.get('/', (req, res) => {
   const { shop } = req.query;
   if (shop) {
     const state = nonce();
     const redirectUri = `${appAddress}/shopify/callback`;
-    const installUrl = `https://${shop
-    }/admin/oauth/authorize?client_id=${apiKey
-    }&scope=${scopes
-    }&state=${state
-    }&redirect_uri=${redirectUri}`;
+    const installUrl = `https://${shop}/admin/oauth/authorize?client_id=${apiKey}&scope=${scopes}&state=${state}&redirect_uri=${redirectUri}`;
 
     res.cookie('state', state);
     res.redirect(installUrl);
   } else {
-    res.status(400).send('Missing shop parameter. Please add ?shop=your-development-shop.myshopify.com to your request');
+    res
+      .status(400)
+      .send(
+        'Missing shop parameter. Please add ?shop=your-development-shop.myshopify.com to your request',
+      );
   }
 });
 
 router.get('/callback', (req, res) => {
-  const {
-    shop, hmac, code, state,
-  } = req.query;
+  const { shop, hmac, code, state } = req.query;
   const stateCookie = cookie.parse(req.headers.cookie).state;
 
   res.cookie('shop', shop);
@@ -74,7 +70,8 @@ router.get('/callback', (req, res) => {
       code,
     };
 
-    request.post(accessTokenRequestUrl, { json: accessTokenPayload })
+    request
+      .post(accessTokenRequestUrl, { json: accessTokenPayload })
       .then((accessTokenResponse) => {
         const accessToken = accessTokenResponse.access_token;
 
@@ -85,7 +82,8 @@ router.get('/callback', (req, res) => {
           'X-Shopify-Access-Token': accessToken,
         };
 
-        request.get(shopRequestUrl, { headers: shopRequestHeaders })
+        request
+          .get(shopRequestUrl, { headers: shopRequestHeaders })
           .then((shopResponse) => {
             res.status(200).end(shopResponse);
           })

@@ -26,7 +26,8 @@ const ChatServer = (() => {
     return new Promise((resolve, reject) => {
       DialogFlowApi.sendQuery(botId, query.message)
         .then((response) => {
-          const { handleParameters, options, endOfConversation } = intents[response.intentName] || {};
+          const { handleParameters, options, endOfConversation } =
+            intents[response.intentName] || {};
           bot.conversation.push(response.text);
           bot.collectedData = handleParameters
             ? { ...bot.collectedData, ...handleParameters(response.data) }
@@ -65,7 +66,9 @@ const ChatServer = (() => {
     db.saveConversation(liveBots[botId].conversation);
     return new Promise((resolve, reject) => {
       resolve({
-        message: `You are ${height.value} ${height.unit} tall and weigh ${weight.value} ${weight.unit}.
+        message: `You are ${height.value} ${height.unit} tall and weigh ${
+          weight.value
+        } ${weight.unit}.
         Your bra is ${braSize.band}${braSize.cup}, Correct?`,
         options: ['Yes', 'No'],
         isRunning: false,

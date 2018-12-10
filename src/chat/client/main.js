@@ -13,10 +13,8 @@ const DOMHandler = (() => {
 
   const isOpen = true;
 
-  const isItMobile = () => Math.min(
-    $(window).width(),
-    $(window).height(),
-  ) < 400;
+  const isItMobile = () =>
+    Math.min($(window).width(), $(window).height()) < 400;
 
   const createChatDOM = () => {
     const container = $('<div/>');
@@ -225,7 +223,6 @@ const DOMHandler = (() => {
       'flex-direction': 'column',
       width: ' calc(100% - 85px)',
       'min-width': ' 100px',
-
     });
     content.appendTo(message);
 
@@ -237,7 +234,6 @@ const DOMHandler = (() => {
       'border-radius': ' 6px',
       position: ' relative',
       'line-height': '1.4',
-
     });
     textWrapper.appendTo(content);
     const image = $('<div/>');
@@ -277,9 +273,7 @@ const DOMHandler = (() => {
   };
 
   const addBotMessage = (data) => {
-    const {
-      avatar, content, textWrapper, fadeIn,
-    } = addMessage(data);
+    const { avatar, content, textWrapper, fadeIn } = addMessage(data);
     avatar.css({
       'background-color': ' #f5886e',
       float: ' left',
@@ -325,9 +319,7 @@ const DOMHandler = (() => {
   };
 
   const addUserMessage = (data) => {
-    const {
-      avatar, content, textWrapper, fadeIn,
-    } = addMessage(data);
+    const { avatar, content, textWrapper, fadeIn } = addMessage(data);
     avatar.css({
       'background-color': ' #fdbf68',
       float: ' right',
@@ -348,10 +340,11 @@ const DOMHandler = (() => {
 
   const clearInput = () => chatDOM.input.val('');
 
-  const updateScroll = () => chatDOM.messages.animate(
-    { scrollTop: chatDOM.messages.get(0).scrollHeight },
-    1000,
-  );
+  const updateScroll = () =>
+    chatDOM.messages.animate(
+      { scrollTop: chatDOM.messages.get(0).scrollHeight },
+      1000,
+    );
 
   const setStatus = (icon, text) => {
     chatDOM.status_icon.attr('src', `${ASSETS_DIRECTORY}/${icon}`);
@@ -361,11 +354,10 @@ const DOMHandler = (() => {
     });
   };
 
-  const hideOptions = (optionsWrapper) => new Promise(
-    (resolve) => {
+  const hideOptions = (optionsWrapper) =>
+    new Promise((resolve) => {
       optionsWrapper.fadeOut(500, resolve);
-    },
-  );
+    });
 
   const changeToggleButtonState = (state) => {
     if (state === 'minimize') {
@@ -375,9 +367,8 @@ const DOMHandler = (() => {
     }
   };
 
-  const toggleChat = () => new Promise(
-    (resolve) => chatDOM.chat_content.slideToggle(1000, resolve),
-  );
+  const toggleChat = () =>
+    new Promise((resolve) => chatDOM.chat_content.slideToggle(1000, resolve));
 
   const createChat = (settings) => {
     createChatDOM();
@@ -410,8 +401,8 @@ const ConnectionHandler = (() => {
 
   const hasConnected = () => !!connection.botId;
 
-  const startConversation = () => new Promise(
-    (resolve, reject) => {
+  const startConversation = () =>
+    new Promise((resolve, reject) => {
       $.get(`${config.appAddress}/chat/server/init?shop=shop.com`)
         .done((data) => {
           const response = JSON.parse(data);
@@ -421,37 +412,42 @@ const ConnectionHandler = (() => {
         .fail((error) => {
           reject(error.statusText);
         });
-    },
-  );
+    });
 
-  const sendMessage = (message) => new Promise(
-    (resolve, reject) => {
+  const sendMessage = (message) =>
+    new Promise((resolve, reject) => {
       $.post({
-        url: `${config.appAddress}/chat/server/sendQuery?botId=${connection.botId}`,
+        url: `${config.appAddress}/chat/server/sendQuery?botId=${
+          connection.botId
+        }`,
         data: JSON.stringify({
           message,
           isRunning: true,
         }),
         contentType: 'application/json',
-      }).done((data) => {
-        resolve(JSON.parse(data));
-      }).fail((error) => {
-        reject(error.statusText);
-      });
-    },
-  );
-
-  const askForCalculation = () => new Promise(
-    (resolve, reject) => {
-      $.get(`${config.appAddress}/chat/server/getCalculation?botId=${connection.botId}`)
+      })
         .done((data) => {
           resolve(JSON.parse(data));
         })
         .fail((error) => {
           reject(error.statusText);
         });
-    },
-  );
+    });
+
+  const askForCalculation = () =>
+    new Promise((resolve, reject) => {
+      $.get(
+        `${config.appAddress}/chat/server/getCalculation?botId=${
+          connection.botId
+        }`,
+      )
+        .done((data) => {
+          resolve(JSON.parse(data));
+        })
+        .fail((error) => {
+          reject(error.statusText);
+        });
+    });
 
   return {
     hasConnected,
@@ -466,7 +462,6 @@ const MessageQueue = (() => {
 
   let queue = [];
   let timer;
-
 
   const send = () => {
     const packet = queue.join('\n');
@@ -506,8 +501,7 @@ const ChatApp = (() => {
 
   const handleBotSendMessage = (data) => {
     if (data.startCalculating) {
-      ConnectionHandler.askForCalculation()
-        .then(handleBotSendMessage);
+      ConnectionHandler.askForCalculation().then(handleBotSendMessage);
     } else {
       DOMHandler.setStatus(DOMHandler.STATUS.OK, 'Online');
     }
@@ -519,7 +513,8 @@ const ChatApp = (() => {
     promise
       .then((response) => {
         handleBotSendMessage(response);
-      }).catch((error) => {
+      })
+      .catch((error) => {
         DOMHandler.setStatus(DOMHandler.STATUS.ERROR, error);
       });
   };
@@ -529,23 +524,25 @@ const ChatApp = (() => {
   };
 
   const handleOptionClick = (option, optionsWrapper) => {
-    DOMHandler.hideOptions(optionsWrapper)
-      .then(() => {
-        DOMHandler.addUserMessage({ message: option });
-        sendMessage(option);
-      });
+    DOMHandler.hideOptions(optionsWrapper).then(() => {
+      DOMHandler.addUserMessage({ message: option });
+      sendMessage(option);
+    });
   };
 
   const toggleWindow = () => {
     const buttonStatus = DOMHandler.isOpen ? 'maximize' : 'minimize';
     DOMHandler.isOpen = !DOMHandler.isOpen;
-    DOMHandler.toggleChat()
-      .then(() => DOMHandler.changeToggleButtonState(buttonStatus));
+    DOMHandler.toggleChat().then(() =>
+      DOMHandler.changeToggleButtonState(buttonStatus),
+    );
   };
 
   const init = () => {
-    if (Array.from(document.getElementsByTagName('meta'))
-      .find((meta) => meta.getAttribute('property') === 'og:type').getAttribute('content') === 'product'
+    if (
+      Array.from(document.getElementsByTagName('meta'))
+        .find((meta) => meta.getAttribute('property') === 'og:type')
+        .getAttribute('content') === 'product'
     ) {
       const settings = loadSettings();
       DOMHandler.createChat(settings);
