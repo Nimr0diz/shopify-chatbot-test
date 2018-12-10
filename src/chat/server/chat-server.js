@@ -1,7 +1,6 @@
 const Guid = require('guid');
 const DialogFlowApi = require('./dialogflow-api');
 
-
 const ChatServer = (() => {
   const liveBots = {};
   const intents = {};
@@ -26,7 +25,8 @@ const ChatServer = (() => {
     return new Promise((resolve, reject) => {
       DialogFlowApi.sendQuery(botId, query.message)
         .then((response) => {
-          const { handleParameters, options, endOfConversation } = intents[response.intentName] || {};
+          const { handleParameters, options, endOfConversation } =
+            intents[response.intentName] || {};
           bot.collectedData = handleParameters
             ? { ...bot.collectedData, ...handleParameters(response.data) }
             : bot.collectedData;
@@ -62,7 +62,9 @@ const ChatServer = (() => {
     const { height, weight, braSize } = liveBots[botId].collectedData;
     return new Promise((resolve, reject) => {
       resolve({
-        message: `You are ${height.value} ${height.unit} tall and weigh ${weight.value} ${weight.unit}.
+        message: `You are ${height.value} ${height.unit} tall and weigh ${weight.value} ${
+          weight.unit
+        }.
         Your bra is ${braSize.band}${braSize.cup}, Correct?`,
         options: ['Yes', 'No'],
         isRunning: false,
