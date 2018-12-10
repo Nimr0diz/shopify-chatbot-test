@@ -4,6 +4,7 @@ const cookie = require('cookie');
 const querystring = require('querystring');
 const request = require('request-promise');
 const express = require('express');
+const fs = require('fs');
 
 const router = express.Router();
 
@@ -97,6 +98,76 @@ router.get('/callback', (req, res) => {
   } else {
     res.status(400).send('Required parameters missing');
   }
+});
+
+const callToApi = async (method, path, token, json) =>
+  request[method]({
+    url: `https://some-outlets.myshopify.com${path}`,
+    headers: {
+      'X-Shopify-Access-Token': token,
+      'Content-type': 'application/json',
+    },
+    json,
+  }).then((resp) => {
+    try {
+      return JSON.parse(resp);
+    } catch (e) {
+      console.log('put');
+    }
+  });
+// );
+
+router.get('/allThemes', async (req, res) => {
+  const token = cookie.parse(req.headers.cookie).access_token;
+  const { themes } = await callToApi('get', '/admin/themes.json', token);
+  const mainTheme = themes.find(({ role }) => role === 'main');
+  const { assets } = await callToApi(
+    'get',
+    `/admin/themes/${mainTheme.id}/assets.json`,
+    token,
+  );
+  const productAsset = assets.find(
+    (ass) => ass.key === 'sections/product-template.liquid',
+  );
+  const file = await callToApi(
+    'get',
+    `/admin/themes/${mainTheme.id}/assets.json?asset[key]=${
+      productAsset.key
+    }&theme_id=${productAsset.theme_id}`,
+    token,
+  );
+  // console.log(file);
+  const snippetContent = fs
+    .readFileSync(
+      '/home/nimrod/Projects/Yaron/shopify-fatbot/src/chat/client/theme-assets/customer_id.liquid',
+    )
+    .toString();
+  console.log(snippetContent);
+
+  const uploadFile = await callToApi(
+    'put',
+    `/admin/themes/${mainTheme.id}/assets.json`,
+    token,
+    {
+      asset: {
+        key: 'snippets/customer-id.liquid',
+        value: snippetContent,
+      },
+    },
+  );
+
+  const validation = await callToApi(
+    'put',
+    `/admin/themes/${mainTheme.id}/assets.json`,
+    token,
+    {
+      asset: {
+        key: productAsset.key,
+        value: "{% include 'customer-id' %}" + file.asset.value, //eslint-disable-line
+      },
+    },
+  );
+  res.send('done');
 });
 
 module.exports = router;
