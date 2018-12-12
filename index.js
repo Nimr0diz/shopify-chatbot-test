@@ -4,7 +4,7 @@ const cookie = require('cookie');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const express = require('express');
-const db = require('./src/db/test');
+const db = require('./src/db/database-module');
 
 const app = express();
 
@@ -54,7 +54,8 @@ db.connect(databaseCred)
     app.listen(3000, () => {
       console.log('Example app listening on port 3000!');
     });
-  }).catch((error) => {
+  })
+  .catch((error) => {
     console.error('database connection failed:');
     console.error(error.errmsg);
   });

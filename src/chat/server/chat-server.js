@@ -1,6 +1,6 @@
 const Guid = require('guid');
 const DialogFlowApi = require('./dialogflow-api');
-const db = require('../../db/test');
+const db = require('../../db/database-module');
 
 const ChatServer = (() => {
   const liveBots = {};
@@ -43,10 +43,9 @@ const ChatServer = (() => {
     });
   };
 
-  const startConversation = (shop) => {
+  const startConversation = (shopId) => {
     // TODO merchantId = DB.getMerchantByShop(shop).id;
-    const merchantId = 0;
-    const botId = createNewBot(merchantId);
+    const botId = createNewBot(shopId);
     return new Promise((resolve, reject) => {
       DialogFlowApi.sendQuery(botId, 'Hello')
         .then((response) => {
@@ -62,8 +61,9 @@ const ChatServer = (() => {
   };
 
   const getCalculation = (botId) => {
-    const { height, weight, braSize } = liveBots[botId].collectedData;
-    db.saveConversation(liveBots[botId].conversation);
+    const { merchantId, collectedData, conversation } = liveBots[botId];
+    const { height, weight, braSize } = collectedData;
+    db.addConversation(merchantId, conversation);
     return new Promise((resolve, reject) => {
       resolve({
         message: `You are ${height.value} ${height.unit} tall and weigh ${
