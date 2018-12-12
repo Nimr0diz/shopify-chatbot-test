@@ -4,6 +4,7 @@ const cookie = require('cookie');
 const querystring = require('querystring');
 const request = require('request-promise');
 const express = require('express');
+const db = require('../db/database-module');
 
 const router = express.Router();
 
@@ -30,7 +31,7 @@ router.get('/', (req, res) => {
 router.get('/callback', (req, res) => {
   const { shop, hmac, code, state } = req.query;
   const stateCookie = cookie.parse(req.headers.cookie).state;
-
+  console.log('$ callback');
   res.cookie('shop', shop);
   if (state !== stateCookie) {
     return res.status(403).send('Request origin cannot be verified');
@@ -69,27 +70,48 @@ router.get('/callback', (req, res) => {
       client_secret: apiSecret,
       code,
     };
-
     request
       .post(accessTokenRequestUrl, { json: accessTokenPayload })
-      .then((accessTokenResponse) => {
+      .then(async (accessTokenResponse) => {
         const accessToken = accessTokenResponse.access_token;
+        if (!(await db.checkIfMerchantExists(shop))) {
+          const { _id: merchantId } = await db.addMerchant(shop, accessToken);
+          request
+            .post({
+              url: `https://${shop}/admin/script_tags.json`,
+              headers: {
+                'X-Shopify-Access-Token': accessToken,
+              },
+              json: {
+                script_tag: {
+                  event: 'onload',
+                  src: `${appAddress}/chat/client/main.js?id=${merchantId}`,
+                },
+              },
+            })
+            .then(() => {
+              console.log('added file');
+              res.status(200).send('Installed!');
+            });
+        }
+        const accessTokenCookie = cookie.parse(req.headers.cookie).access_token;
+        if (!accessTokenCookie) {
+          res.cookie('access_token', accessToken);
+        }
 
-        res.cookie('access_token', accessToken);
+        // const shopRequestUrl = `https://${shop}/admin/shop.json`;
+        // const shopRequestHeaders = {
+        //   'X-Shopify-Access-Token': accessToken,
+        // };
 
-        const shopRequestUrl = `https://${shop}/admin/shop.json`;
-        const shopRequestHeaders = {
-          'X-Shopify-Access-Token': accessToken,
-        };
-
-        request
-          .get(shopRequestUrl, { headers: shopRequestHeaders })
-          .then((shopResponse) => {
-            res.status(200).end(shopResponse);
-          })
-          .catch((error) => {
-            res.status(error.statusCode).send(error.error.error_description);
-          });
+        // request
+        //   .get(shopRequestUrl, { headers: shopRequestHeaders })
+        //   .then((shopResponse) => {
+        //     res.status(200).end(shopResponse);
+        //   })
+        //   .catch((error) => {
+        //     res.status(error.statusCode).send(error.error.error_description);
+        //   });
       })
       .catch((error) => {
         res.status(error.statusCode).send(error.error.error_description);

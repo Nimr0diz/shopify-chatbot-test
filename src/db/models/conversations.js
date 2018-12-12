@@ -9,6 +9,7 @@ const MessageSchema = new Schema({
 
 const ConversationSchema = new Schema({
   // customerId: { type: Schema.Types.ObjectId, ref: 'customer' },
+  merchantId: { type: Schema.Types.ObjectId, ref: 'merchant' },
   messages: [MessageSchema],
 });
 

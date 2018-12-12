@@ -1,5 +1,6 @@
 const config = {
   appAddress: 'https://nimrod-chatbot.localtunnel.me',
+  shopId: '@SHOP_ID',
 };
 
 const DOMHandler = (() => {
@@ -403,7 +404,7 @@ const ConnectionHandler = (() => {
 
   const startConversation = () =>
     new Promise((resolve, reject) => {
-      $.get(`${config.appAddress}/chat/server/init?shop=shop.com`)
+      $.get(`${config.appAddress}/chat/server/init?shop_id=${config.shopId}`)
         .done((data) => {
           const response = JSON.parse(data);
           connection.botId = response.botId;

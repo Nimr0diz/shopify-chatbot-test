@@ -6,7 +6,7 @@ const router = express.Router();
 ChatServer.init();
 
 router.get('/init', (req, res) => {
-  ChatServer.startConversation(req.query.shop).then((initialResponse) =>
+  ChatServer.startConversation(req.query.shop_id).then((initialResponse) =>
     res.send(JSON.stringify(initialResponse)),
   );
 });
@@ -18,7 +18,9 @@ router.post('/sendQuery', (req, res) => {
 });
 
 router.get('/getCalculation', (req, res) => {
-  ChatServer.getCalculation(req.query.botId).then((response) => res.send(JSON.stringify(response)));
+  ChatServer.getCalculation(req.query.botId).then((response) =>
+    res.send(JSON.stringify(response)),
+  );
 });
 
 module.exports = router;
